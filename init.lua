@@ -11,9 +11,9 @@ end
 
 -- Configuration Management
 local config = {
-    web = true,
+    web = false, -- SET TO FALSE FOR LOCAL TESTING, true when files are on GitHub
     user = "zaniityy",
-    branch = "main", -- change to "revision" if using that branch
+    branch = "revision", -- using original branch structure for compatibility
     debug = false,
     performance = {
         enableCaching = true,
