@@ -367,23 +367,30 @@ end
 useMethods(globalMethods, "core")
 
 -- Validate critical methods are available
-local criticalMethods = {
-    getGc = globalMethods.getGc,
-    getInfo = globalMethods.getInfo,
-    getConstants = globalMethods.getConstants,
-    hookFunction = globalMethods.hookFunction,
-    newCClosure = globalMethods.newCClosure
-}
-
+local criticalMethodsList = {"getGc", "getInfo", "getConstants", "hookFunction", "newCClosure"}
 local missingCritical = {}
-for name, method in pairs(criticalMethods) do
-    if not method then
-        table.insert(missingCritical, name)
+
+for _, methodName in ipairs(criticalMethodsList) do
+    if not globalMethods[methodName] then
+        table.insert(missingCritical, methodName)
     end
 end
 
 if #missingCritical > 0 then
-    error(("[Hydroxide] Critical methods missing: %s"):format(table.concat(missingCritical, ", ")))
+    local errorMsg = string.format(
+        "\n[Hydroxide] Critical methods missing: %s\n" ..
+        "\nYour executor doesn't support the following required functions:\n" ..
+        "- %s\n" ..
+        "\nHydroxide requires an executor with advanced debugging capabilities.\n" ..
+        "Supported executors include: Synapse X, Script-Ware, Krnl, Fluxus, etc.\n",
+        table.concat(missingCritical, ", "),
+        table.concat(missingCritical, "\n- ")
+    )
+    error(errorMsg)
+end
+
+if config.debug then
+    print("[Hydroxide] All critical methods validated successfully")
 end
 
 -- Enhanced import system with caching and validation
