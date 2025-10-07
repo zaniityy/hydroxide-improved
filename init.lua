@@ -396,20 +396,21 @@ end
 -- Enhanced import system with caching and validation
 local HttpService = game:GetService("HttpService")
 
--- Fetch release info with error handling
-local releaseInfo
+-- Fetch release info with error handling (optional, fallback if fails)
+local releaseInfo = { tag_name = "2.0.0" }
 local success, result = pcall(function()
-    return HttpService:JSONDecode(game:HttpGetAsync("https://api.github.com/repos/" .. config.user .. "/Hydroxide/releases"))[1]
+    return HttpService:JSONDecode(game:HttpGetAsync("https://api.github.com/repos/" .. config.user .. "/hydroxide-improved/releases"))[1]
 end)
 
-if success then
+if success and result then
     releaseInfo = result
     if config.debug then
         print(("[Hydroxide] Latest release: %s"):format(releaseInfo.tag_name))
     end
 else
-    warn("[Hydroxide] Failed to fetch release info:", result)
-    releaseInfo = { tag_name = "unknown" }
+    if config.debug then
+        warn("[Hydroxide] Failed to fetch release info (using default):", result)
+    end
 end
 
 -- Enhanced import function with performance tracking and caching
@@ -485,7 +486,7 @@ if readFile and writeFile then
                     -- Check if file needs updating
                     if (isFile and not isFile(file)) or not importCache[asset] then
                         local success, result = pcall(function()
-                            return game:HttpGetAsync("https://raw.githubusercontent.com/" .. config.user .. "/Hydroxide/" .. config.branch .. '/' .. asset .. ".lua")
+                            return game:HttpGetAsync("https://raw.githubusercontent.com/" .. config.user .. "/hydroxide-improved/" .. config.branch .. '/' .. asset .. ".lua")
                         end)
                         
                         if success then
@@ -500,7 +501,7 @@ if readFile and writeFile then
 
                         if not success or not importCache[asset] then
                             local dlSuccess, dlResult = pcall(function()
-                                return game:HttpGetAsync("https://raw.githubusercontent.com/" .. config.user .. "/Hydroxide/" .. config.branch .. '/' .. asset .. ".lua")
+                                return game:HttpGetAsync("https://raw.githubusercontent.com/" .. config.user .. "/hydroxide-improved/" .. config.branch .. '/' .. asset .. ".lua")
                             end)
                             
                             if dlSuccess then
@@ -530,7 +531,7 @@ if readFile and writeFile then
                     end
                 else
                     local success, result = pcall(function()
-                        return loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/" .. config.user .. "/Hydroxide/" .. config.branch .. '/' .. asset .. ".lua"), asset .. '.lua')()
+                        return loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/" .. config.user .. "/hydroxide-improved/" .. config.branch .. '/' .. asset .. ".lua"), asset .. '.lua')()
                     end)
                     
                     if success then
@@ -607,7 +608,7 @@ if readFile and writeFile then
 
                 if not success then
                     local dlSuccess, dlResult = pcall(function()
-                        return game:HttpGetAsync("https://raw.githubusercontent.com/" .. config.user .. "/Hydroxide/" .. config.branch .. '/' .. asset .. ".lua")
+                        return game:HttpGetAsync("https://raw.githubusercontent.com/" .. config.user .. "/hydroxide-improved/" .. config.branch .. '/' .. asset .. ".lua")
                     end)
                     
                     if dlSuccess then
