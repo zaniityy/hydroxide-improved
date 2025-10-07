@@ -12,8 +12,8 @@ end
 -- Configuration Management
 local config = {
     web = true,
-    user = "Upbolt", -- change if you're using a fork
-    branch = "revision",
+    user = "zaniityy",
+    branch = "main", -- change to "revision" if using that branch
     debug = false,
     performance = {
         enableCaching = true,
@@ -164,16 +164,6 @@ local globalMethods = {
     isFolder = isfolder,
     isFile = isfile,
 }
-
--- Performance: Validate critical methods at startup
-local criticalMethods = {
-    "getGc", "getInfo", "getConstants", "hookFunction", "newCClosure"
-}
-
-local hasCritical, missingCritical = hasMethods(criticalMethods)
-if not hasCritical then
-    error(("[Hydroxide] Critical methods missing: %s"):format(table.concat(missingCritical, ", ")))
-end
 
 -- Exploit-specific compatibility patches
 if PROTOSMASHER_LOADED then
@@ -375,6 +365,26 @@ end
 
 -- Inject global methods into environment
 useMethods(globalMethods, "core")
+
+-- Validate critical methods are available
+local criticalMethods = {
+    getGc = globalMethods.getGc,
+    getInfo = globalMethods.getInfo,
+    getConstants = globalMethods.getConstants,
+    hookFunction = globalMethods.hookFunction,
+    newCClosure = globalMethods.newCClosure
+}
+
+local missingCritical = {}
+for name, method in pairs(criticalMethods) do
+    if not method then
+        table.insert(missingCritical, name)
+    end
+end
+
+if #missingCritical > 0 then
+    error(("[Hydroxide] Critical methods missing: %s"):format(table.concat(missingCritical, ", ")))
+end
 
 -- Enhanced import system with caching and validation
 local HttpService = game:GetService("HttpService")
