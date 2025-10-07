@@ -550,7 +550,10 @@ if readFile and writeFile then
                 if success then
                     assets = { result }
                 else
-                    warn("[Hydroxide] Failed to load local:", asset, result)
+                    -- Don't spam warnings for missing UI files
+                    if config.debug or not asset:match("^ui/") then
+                        warn("[Hydroxide] Failed to load local:", asset, result)
+                    end
                     return nil
                 end
             end
@@ -643,7 +646,10 @@ if readFile and writeFile then
                 if success then
                     assets = { result }
                 else
-                    warn("[Hydroxide] Failed to load local:", asset, result)
+                    -- Don't spam warnings for missing UI files
+                    if config.debug or not asset:match("^ui/") then
+                        warn("[Hydroxide] Failed to load local:", asset, result)
+                    end
                     return nil
                 end
             end
@@ -672,23 +678,40 @@ local function safeImport(module, name)
     local success, result = pcall(import, module)
     if success and result then
         useMethods(result, name)
+        if config.debug then
+            print(("[Hydroxide] Successfully imported: %s"):format(module))
+        end
         return true
     else
-        warn("[Hydroxide] Failed to import:", module, result)
+        if config.debug then
+            warn("[Hydroxide] Failed to import:", module, tostring(result))
+        end
         return false
     end
 end
 
-safeImport("methods/string", "string")
-safeImport("methods/table", "table")
-safeImport("methods/userdata", "userdata")
-safeImport("methods/environment", "environment")
+-- Import core method extensions (required)
+local coreImports = {
+    {module = "methods/string", name = "string"},
+    {module = "methods/table", name = "table"},
+    {module = "methods/userdata", name = "userdata"},
+    {module = "methods/environment", name = "environment"}
+}
+
+local importedCount = 0
+for _, imp in ipairs(coreImports) do
+    if safeImport(imp.module, imp.name) then
+        importedCount = importedCount + 1
+    end
+end
 
 -- Initialize complete
+print(("[Hydroxide] Initialization complete - %d/%d core modules loaded"):format(importedCount, #coreImports))
 if config.debug then
-    print("[Hydroxide] Initialization complete")
     print("[Hydroxide] Methods registered:", #methodRegistry)
     print("[Hydroxide] Cache entries:", #importCache)
 end
 
+-- UI is optional and commented out by default
+-- Uncomment the line below to load the UI system
 --import("ui/main")
