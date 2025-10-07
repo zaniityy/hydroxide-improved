@@ -544,7 +544,7 @@ if readFile and writeFile then
             else
                 importMethod = "local"
                 local success, result = pcall(function()
-                    return loadstring(readFile("hydroxide/" .. asset .. ".lua"), asset .. '.lua')()
+                    return loadstring(readFile(asset .. ".lua"), asset .. '.lua')()
                 end)
                 
                 if success then
@@ -637,7 +637,7 @@ if readFile and writeFile then
                 end
             else
                 local success, result = pcall(function()
-                    return loadstring(readFile("hydroxide/" .. asset .. ".lua"), asset .. '.lua')()
+                    return loadstring(readFile(asset .. ".lua"), asset .. '.lua')()
                 end)
                 
                 if success then
